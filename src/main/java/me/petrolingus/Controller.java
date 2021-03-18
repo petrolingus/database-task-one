@@ -53,7 +53,7 @@ public class Controller {
                 generateTable("select * from person;");
                 break;
             case "hyperlinkPhones":
-                generateTable("select * from phone_number join provider on provider.id = provider;");
+                generateTable("select phone_number.id as id, phone, type, name from phone_number join provider on provider.id = provider;");
                 break;
             case "hyperlinkProviders":
                 generateTable("select * from provider;");
