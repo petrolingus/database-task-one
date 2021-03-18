@@ -4,15 +4,14 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.*;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class Controller {
@@ -40,38 +39,50 @@ public class Controller {
             e.printStackTrace();
         }
 
-        generateTable();
+        generateTable("select * from person;");
     }
 
-    public void onKeyTyped() throws SQLException {
-        generateTable();
+    public void onKeyTyped() {
+
     }
 
-    public void onLinkPressed(ActionEvent event) {
+    public void onLinkPressed(ActionEvent event) throws SQLException {
         Hyperlink hyperlink = ((Hyperlink) event.getSource());
-//        System.out.println(hyperlink.);
+        switch (hyperlink.getId()) {
+            case "hyperlinkPeople":
+                generateTable("select * from person;");
+                break;
+            case "hyperlinkPhones":
+                generateTable("select * from phone_number join provider on provider.id = provider;");
+                break;
+            case "hyperlinkProviders":
+                generateTable("select * from provider;");
+                break;
+            case "hyperlinkPhonebook":
+                generateTable("select first_name, middle_name, last_name, phone, type, name from phone_contact \n" +
+                        "\tjoin person on person.id = person_id\n" +
+                        "\tjoin phone_number on phone_number.id = phone_number_id\n" +
+                        "\tjoin provider on provider.id = phone_number.provider;");
+                break;
+            default:
+        }
     }
 
-    private void generateTable() throws SQLException {
+    private void generateTable(String sql) throws SQLException {
 
         Statement statement = connection.createStatement();
-        ResultSet resultSet;
-
-        String str = textField.getText();
-        if (str.length() > 0) {
-            resultSet = statement.executeQuery("SELECT first_name, middle_name, last_name FROM person WHERE last_name LIKE N'%" + str + "%';");
-        } else {
-            resultSet = statement.executeQuery("SELECT first_name, middle_name, last_name FROM person;");
-        }
+        ResultSet resultSet = statement.executeQuery(sql);
 
         table.getColumns().clear();
         for (int i = 0; i < resultSet.getMetaData().getColumnCount(); i++) {
-            final int j = i;
             String dbColumnName = resultSet.getMetaData().getColumnName(i + 1);
-            String columnName = columnMappings.getProperty(dbColumnName, dbColumnName);
-            TableColumn<ObservableList<String>, String> column = new TableColumn<>(columnName);
-            column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(j)));
-            table.getColumns().add(column);
+            String columnName = columnMappings.getProperty(dbColumnName);
+            if (columnName != null) {
+                int finalI = i;
+                TableColumn<ObservableList<String>, String> column = new TableColumn<>(columnName);
+                column.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().get(finalI)));
+                table.getColumns().add(column);
+            }
         }
 
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();

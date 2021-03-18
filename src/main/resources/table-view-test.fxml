@@ -40,27 +40,26 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <HBox prefHeight="400.0" prefWidth="600.0" spacing="8.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.petrolingus.Controller">
    <children>
-      <VBox prefWidth="200.0" spacing="8.0">
+      <VBox minWidth="200.0" prefWidth="200.0" spacing="8.0">
          <children>
-            <Hyperlink maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Люди">
+            <Hyperlink fx:id="hyperlinkPeople" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Люди">
                <font>
                   <Font size="18.0" />
                </font>
             </Hyperlink>
-            <Hyperlink maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Номера">
+            <Hyperlink fx:id="hyperlinkPhones" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Номера">
                <font>
                   <Font size="18.0" />
                </font>
             </Hyperlink>
-            <Hyperlink maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Провайдеры">
+            <Hyperlink fx:id="hyperlinkProviders" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Провайдеры">
                <font>
                   <Font size="18.0" />
                </font>
             </Hyperlink>
-            <Hyperlink maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Справочник">
+            <Hyperlink fx:id="hyperlinkPhonebook" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" text="Справочник">
                <font>
                   <Font size="18.0" />
                </font>
