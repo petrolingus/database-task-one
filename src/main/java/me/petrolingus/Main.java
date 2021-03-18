@@ -16,6 +16,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/table-view-test.fxml"));
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         primaryStage.setTitle("Table View Test");
         primaryStage.setScene(scene);
         primaryStage.show();
