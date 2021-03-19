@@ -6,6 +6,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+
 public class Main extends Application {
 
     public static void main(String[] args) {
@@ -17,7 +21,17 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("/table-view-test.fxml"));
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
-        primaryStage.setTitle("Table View Test");
+
+        Properties columnMappings = new Properties();
+        try (FileReader reader = new FileReader("columnMappings.properties")) {
+            columnMappings.load(reader);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String title = columnMappings.getProperty("application_title");
+
+        primaryStage.setTitle(title);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

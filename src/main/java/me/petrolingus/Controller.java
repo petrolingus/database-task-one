@@ -7,7 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -17,11 +17,11 @@ import java.util.Properties;
 public class Controller {
 
     public TableView<ObservableList<String>> table;
-
-    public TextField textField;
+    public Hyperlink hyperlinkPhonebook;
+    public VBox searchParametersBox;
+    public VBox toolBox;
 
     private Connection connection;
-
     private Properties columnMappings;
 
     public void initialize() throws SQLException {
@@ -39,11 +39,11 @@ public class Controller {
             e.printStackTrace();
         }
 
+        searchParametersBox.visibleProperty().bind(hyperlinkPhonebook.focusedProperty());
+
+        toolBox.visibleProperty().bind(hyperlinkPhonebook.focusedProperty().not());
+
         generateTable("select * from person;");
-    }
-
-    public void onKeyTyped() {
-
     }
 
     public void onLinkPressed(ActionEvent event) throws SQLException {

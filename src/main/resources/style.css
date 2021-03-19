@@ -1,3 +1,17 @@
+.root {
+    -fx-background-color: #edeef0;
+}
+
+.left-vertical-box {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, #e7e8ec, 1, 0, 0, 1);
+}
+
+.search-label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #656565;
+}
+
 /*******************************************************************************
  *                                                                             *
  * Hyperlink                                                                   *
@@ -5,15 +19,17 @@
  ******************************************************************************/
 
 .hyperlink {
-    -fx-text-fill: -fx-accent;
+    -fx-padding: 0 0 0 8;
+    -fx-border-width: 0 0 0 2px;
+    -fx-text-fill: #396896;
     -fx-underline: false;
 }
 
-.hyperlink:visited {
-    -fx-text-fill: -fx-accent;
-    -fx-underline: false;
+.hyperlink:focused {
+    -fx-border-color: #5181b8;
+    -fx-border-style: solid;
 }
 
 .hyperlink:hover {
-    -fx-underline: true;
+    -fx-background-color: #F0F2F5;
 }
