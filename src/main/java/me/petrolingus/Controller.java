@@ -4,39 +4,49 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Pair;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 public class Controller {
 
     public TableView<ObservableList<String>> table;
+
+
     public Hyperlink hyperlinkPhonebook;
+
+
     public VBox searchParametersBox;
-    public VBox toolBox;
 
     public TextField lastNameField;
+
     public TextField firstNameField;
+
     public TextField middleNameField;
+
     public TextField phoneNumberField;
+
     public TextField providerField;
+
+
+    public VBox toolBox;
 
     public Button addButton;
 
+
     private Connection connection;
+
     private Properties columnMappings;
 
     private int selectedLink = 0;
+
 
     public void initialize() throws SQLException {
 
@@ -83,6 +93,7 @@ public class Controller {
         }
 
         searchParametersBox.setDisable(selectedLink != 3);
+        toolBox.setDisable(selectedLink == 3);
     }
 
     private void generateTable(String sql) throws SQLException {
@@ -137,7 +148,7 @@ public class Controller {
         }
     }
 
-    public void onAddButton() {
+    public void onAddButton() throws SQLException {
 
         TextField lastNameField = new TextField();
         lastNameField.setPromptText("Last Name");
@@ -162,11 +173,11 @@ public class Controller {
         vbox.getChildren().addAll(lastNameField, firstNameField, middleNameField, birthday, address, comment);
 
         Dialog<ArrayList<String>> dialog = new Dialog<>();
-        dialog.setTitle("Login Dialog");
-        dialog.setHeaderText("Look, a Custom Login Dialog");
+        dialog.setTitle("Add Dialog");
+        dialog.setHeaderText("Creating a new row");
 
         // Set the button types.
-        ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
+        ButtonType loginButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
         dialog.getDialogPane().setContent(vbox);
 
@@ -176,6 +187,11 @@ public class Controller {
                 ArrayList<String> result = new ArrayList<>();
                 result.add(lastNameField.getText());
                 result.add(firstNameField.getText());
+                result.add(middleNameField.getText());
+                result.add(birthday.getText());
+                result.add(address.getText());
+                result.add(comment.getText());
+
                 return result;
             }
             return null;
@@ -183,10 +199,25 @@ public class Controller {
 
         Optional<ArrayList<String>> result = dialog.showAndWait();
 
-        result.ifPresent(usernamePassword -> {
+        Statement statement = connection.createStatement();
+
+        result.ifPresent(p -> {
             ArrayList<String> arrayList = result.get();
-            for (String s : arrayList) {
-                System.out.println(s);
+
+            String query = "insert into person values (N'" + arrayList.get(0) + "', N'" +
+                    arrayList.get(1) + "', N'" + arrayList.get(2) + "', '" + arrayList.get(3) + "', N'" +
+                    arrayList.get(4) + "', N'" + arrayList.get(5) + "')";
+
+            try {
+                statement.execute(query);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                generateTable("select * from person;");
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         });
     }
