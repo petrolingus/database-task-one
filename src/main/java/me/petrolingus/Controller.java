@@ -4,14 +4,18 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Pair;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 public class Controller {
@@ -21,8 +25,18 @@ public class Controller {
     public VBox searchParametersBox;
     public VBox toolBox;
 
+    public TextField lastNameField;
+    public TextField firstNameField;
+    public TextField middleNameField;
+    public TextField phoneNumberField;
+    public TextField providerField;
+
+    public Button addButton;
+
     private Connection connection;
     private Properties columnMappings;
+
+    private int selectedLink = 0;
 
     public void initialize() throws SQLException {
 
@@ -39,33 +53,36 @@ public class Controller {
             e.printStackTrace();
         }
 
-        searchParametersBox.visibleProperty().bind(hyperlinkPhonebook.focusedProperty());
-
-        toolBox.visibleProperty().bind(hyperlinkPhonebook.focusedProperty().not());
-
         generateTable("select * from person;");
     }
 
     public void onLinkPressed(ActionEvent event) throws SQLException {
+
         Hyperlink hyperlink = ((Hyperlink) event.getSource());
+
         switch (hyperlink.getId()) {
             case "hyperlinkPeople":
+                selectedLink = 0;
                 generateTable("select * from person;");
                 break;
             case "hyperlinkPhones":
+                selectedLink = 1;
                 generateTable("select phone_number.id as id, phone, type, name from phone_number join provider on provider.id = provider;");
                 break;
             case "hyperlinkProviders":
+                selectedLink = 2;
                 generateTable("select * from provider;");
                 break;
             case "hyperlinkPhonebook":
+                selectedLink = 3;
                 generateTable("select first_name, middle_name, last_name, phone, type, name from phone_contact \n" +
                         "\tjoin person on person.id = person_id\n" +
                         "\tjoin phone_number on phone_number.id = phone_number_id\n" +
                         "\tjoin provider on provider.id = phone_number.provider;");
                 break;
-            default:
         }
+
+        searchParametersBox.setDisable(selectedLink != 3);
     }
 
     private void generateTable(String sql) throws SQLException {
@@ -99,4 +116,78 @@ public class Controller {
         table.setItems(data);
     }
 
+    public void onKeyTyped() throws SQLException {
+
+        String query = "select first_name, middle_name, last_name, phone, type, name from phone_contact\n" +
+                "    join person on person.id = person_id\n" +
+                "    join phone_number on phone_number.id = phone_number_id\n" +
+                "    join provider on provider.id = phone_number.provider\n" +
+                "    where";
+
+        String lastName = " last_name like N'%" + lastNameField.getText() + "%'";
+        String firstName = "  first_name like N'%" + firstNameField.getText() + "%'";
+        String middleName = "  middle_name like N'%" + middleNameField.getText() + "%'";
+        String phoneNumber = "  phone like N'%" + phoneNumberField.getText() + "%'";
+        String provider = "  name like N'%" + providerField.getText() + "%'";
+
+        String join = String.join(" and ", lastName, firstName, middleName, phoneNumber, provider);
+
+        if (selectedLink == 3) {
+            generateTable(query + join);
+        }
+    }
+
+    public void onAddButton() {
+
+        TextField lastNameField = new TextField();
+        lastNameField.setPromptText("Last Name");
+
+        TextField firstNameField = new TextField();
+        firstNameField.setPromptText("First Name");
+
+        TextField middleNameField = new TextField();
+        middleNameField.setPromptText("First Name");
+
+        TextField birthday = new TextField();
+        birthday.setPromptText("birthday");
+
+        TextField address = new TextField();
+        address.setPromptText("address");
+
+        TextField comment = new TextField();
+        comment.setPromptText("comment");
+
+        VBox vbox = new VBox();
+        vbox.setSpacing(8);
+        vbox.getChildren().addAll(lastNameField, firstNameField, middleNameField, birthday, address, comment);
+
+        Dialog<ArrayList<String>> dialog = new Dialog<>();
+        dialog.setTitle("Login Dialog");
+        dialog.setHeaderText("Look, a Custom Login Dialog");
+
+        // Set the button types.
+        ButtonType loginButtonType = new ButtonType("Login", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+        dialog.getDialogPane().setContent(vbox);
+
+        // Convert the result to a username-password-pair when the login button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == loginButtonType) {
+                ArrayList<String> result = new ArrayList<>();
+                result.add(lastNameField.getText());
+                result.add(firstNameField.getText());
+                return result;
+            }
+            return null;
+        });
+
+        Optional<ArrayList<String>> result = dialog.showAndWait();
+
+        result.ifPresent(usernamePassword -> {
+            ArrayList<String> arrayList = result.get();
+            for (String s : arrayList) {
+                System.out.println(s);
+            }
+        });
+    }
 }
