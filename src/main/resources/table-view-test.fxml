@@ -34,11 +34,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -49,38 +50,32 @@
          <children>
             <VBox styleClass="left-vertical-box">
                <children>
-                  <Hyperlink fx:id="hyperlinkPeople" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" prefHeight="40.0" text="Люди">
+                  <RadioButton fx:id="radioPeople" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#foo" selected="true" text="Люди">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="tableMode" />
+                     </toggleGroup>
                      <font>
                         <Font size="18.0" />
                      </font>
-                     <VBox.margin>
+                     <opaqueInsets>
                         <Insets />
-                     </VBox.margin>
-                  </Hyperlink>
-                  <Hyperlink fx:id="hyperlinkPhones" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" prefHeight="40.0" text="Номера">
+                     </opaqueInsets>
+                  </RadioButton>
+                  <RadioButton fx:id="radioPhones" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#foo" text="Номера" toggleGroup="$tableMode">
                      <font>
                         <Font size="18.0" />
                      </font>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                  </Hyperlink>
-                  <Hyperlink fx:id="hyperlinkProviders" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" prefHeight="40.0" text="Провайдеры">
+                  </RadioButton>
+                  <RadioButton fx:id="radioProviders" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#foo" text="Провайдеры" toggleGroup="$tableMode">
                      <font>
                         <Font size="18.0" />
                      </font>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                  </Hyperlink>
-                  <Hyperlink fx:id="hyperlinkPhonebook" maxWidth="1.7976931348623157E308" onAction="#onLinkPressed" prefHeight="40.0" text="Справочник">
+                  </RadioButton>
+                  <RadioButton fx:id="radioPhonebook" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#foo" text="Справочник" toggleGroup="$tableMode">
                      <font>
                         <Font size="18.0" />
                      </font>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                  </Hyperlink>
+                  </RadioButton>
                </children>
                <VBox.margin>
                   <Insets />
@@ -143,7 +138,7 @@
       </VBox>
       <VBox HBox.hgrow="ALWAYS">
          <children>
-            <TableView fx:id="table" focusTraversable="false" VBox.vgrow="ALWAYS" />
+            <TableView fx:id="table" cache="true" cacheHint="QUALITY" focusTraversable="false" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
    </children>

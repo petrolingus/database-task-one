@@ -27,7 +27,7 @@ public class Controller {
     public TableView<ObservableList<String>> table;
 
 
-    public Hyperlink hyperlinkPhonebook;
+    public ToggleGroup tableMode;
 
 
     public VBox searchParametersBox;
@@ -73,21 +73,21 @@ public class Controller {
         generateTable("select * from person;");
     }
 
-    public void onLinkPressed(ActionEvent event) throws SQLException {
+    public void foo() throws SQLException {
 
-        Hyperlink hyperlink = ((Hyperlink) event.getSource());
+        String radioButtonId = ((ToggleButton)tableMode.getSelectedToggle()).getId();
 
-        switch (hyperlink.getId()) {
-            case "hyperlinkPeople":
+        switch (radioButtonId) {
+            case "radioPeople":
                 selectedLink = 0;
                 break;
-            case "hyperlinkPhones":
+            case "radioPhones":
                 selectedLink = 1;
                 break;
-            case "hyperlinkProviders":
+            case "radioProviders":
                 selectedLink = 2;
                 break;
-            case "hyperlinkPhonebook":
+            case "radioPhonebook":
                 selectedLink = 3;
                 break;
         }
@@ -96,6 +96,7 @@ public class Controller {
 
         searchParametersBox.setDisable(selectedLink != 3);
         toolBox.setDisable(selectedLink == 3);
+
     }
 
     private void generateTable(String sql) throws SQLException {
