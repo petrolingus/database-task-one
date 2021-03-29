@@ -10,37 +10,13 @@
    <children>
       <VBox>
          <children>
-            <Label text="Last Name" />
+            <Label text="Provider Name" />
             <TextField />
          </children>
       </VBox>
       <VBox>
          <children>
-            <Label text="First Name" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Middle Name" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Birthday" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Address" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Commment" />
+            <Label text="Score" />
             <TextField />
          </children>
       </VBox>

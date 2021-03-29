@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
@@ -10,38 +11,20 @@
    <children>
       <VBox>
          <children>
-            <Label text="Last Name" />
+            <Label text="Phone Number" />
             <TextField />
          </children>
       </VBox>
       <VBox>
          <children>
-            <Label text="First Name" />
+            <Label text="Тип" />
             <TextField />
          </children>
       </VBox>
       <VBox>
          <children>
-            <Label text="Middle Name" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Birthday" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Address" />
-            <TextField />
-         </children>
-      </VBox>
-      <VBox>
-         <children>
-            <Label text="Commment" />
-            <TextField />
+            <Label text="Провайдер" />
+            <ChoiceBox maxWidth="1.7976931348623157E308" />
          </children>
       </VBox>
    </children>

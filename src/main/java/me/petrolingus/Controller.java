@@ -4,16 +4,20 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Controller {
 
@@ -148,77 +152,81 @@ public class Controller {
         }
     }
 
-    public void onAddButton() throws SQLException {
+    @SuppressWarnings("unchecked")
+    public void onAddButton() throws SQLException, IOException {
 
-        TextField lastNameField = new TextField();
-        lastNameField.setPromptText("Last Name");
+        if (selectedLink == 0) {
+            addEntityToTable("person", node -> {}, node -> ((TextField) node).getText());
+        } else if (selectedLink == 1) {
 
-        TextField firstNameField = new TextField();
-        firstNameField.setPromptText("First Name");
+            List<String> providers = List.of("JSHDG", "QWERT", "sjdfhsdl");
 
-        TextField middleNameField = new TextField();
-        middleNameField.setPromptText("First Name");
+            addEntityToTable("phone_number", form -> {
+                form.getChildrenUnmodifiable()
+                        .stream()
+                        .filter(node -> node instanceof VBox)
+                        .map(node -> ((VBox) node).getChildren().get(1))
+                        .filter(node -> node instanceof ChoiceBox)
+                        .findFirst()
+                        .map(node -> (ChoiceBox<String>)node)
+                        .ifPresent(choiceBox -> choiceBox.getItems().addAll(providers));
+            }, node -> {
+                if (node instanceof TextField) {
+                   return ((TextField) node).getText();
+                }
+                return ((ChoiceBox<String>) node).getSelectionModel().getSelectedItem();
+            });
+        } else if (selectedLink == 2) {
+            addEntityToTable("provider", node -> {}, node -> ((TextField) node).getText());
+        }
 
-        TextField birthday = new TextField();
-        birthday.setPromptText("birthday");
+    }
 
-        TextField address = new TextField();
-        address.setPromptText("address");
+    private void addEntityToTable(final String tableName, Consumer<Parent> nodeContentSetter, Function<Node, String> nodeContentGetter) throws IOException {
 
-        TextField comment = new TextField();
-        comment.setPromptText("comment");
+        Parent content = FXMLLoader.load(getClass().getResource("/" + tableName + "-edit-form.fxml"));
 
-        VBox vbox = new VBox();
-        vbox.setSpacing(8);
-        vbox.getChildren().addAll(lastNameField, firstNameField, middleNameField, birthday, address, comment);
+        nodeContentSetter.accept(content);
 
-        Dialog<ArrayList<String>> dialog = new Dialog<>();
-        dialog.setTitle("Add Dialog");
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Add/Edit " + tableName + " Dialog");
         dialog.setHeaderText("Creating a new row");
 
         // Set the button types.
         ButtonType loginButtonType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
-        dialog.getDialogPane().setContent(vbox);
+        dialog.getDialogPane().setContent(content);
 
         // Convert the result to a username-password-pair when the login button is clicked.
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == loginButtonType) {
-                ArrayList<String> result = new ArrayList<>();
-                result.add(lastNameField.getText());
-                result.add(firstNameField.getText());
-                result.add(middleNameField.getText());
-                result.add(birthday.getText());
-                result.add(address.getText());
-                result.add(comment.getText());
-
-                return result;
+                return content.getChildrenUnmodifiable()
+                        .stream()
+                        .filter(node -> node instanceof VBox)
+                        .map(node -> ((VBox) node).getChildren().get(1))
+                        .map(nodeContentGetter)
+                        .collect(Collectors.toList());
             }
             return null;
         });
 
-        Optional<ArrayList<String>> result = dialog.showAndWait();
+        dialog.showAndWait().ifPresent(fields -> {
 
-        Statement statement = connection.createStatement();
+            String values = fields.stream()
+                    .map(field -> "N'" + field + "'")
+                    .collect(Collectors.joining(", ", "(", ")"));
 
-        result.ifPresent(p -> {
-            ArrayList<String> arrayList = result.get();
-
-            String query = "insert into person values (N'" + arrayList.get(0) + "', N'" +
-                    arrayList.get(1) + "', N'" + arrayList.get(2) + "', '" + arrayList.get(3) + "', N'" +
-                    arrayList.get(4) + "', N'" + arrayList.get(5) + "')";
-
-            try {
-                statement.execute(query);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                generateTable("select * from person;");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            addRowAndShowTable("insert into " + tableName + " values " + values, tableName);
         });
+    }
+
+    private void addRowAndShowTable(String sqlQuery, final String tableName) {
+
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sqlQuery);
+            generateTable("select * from " + tableName + ";");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
