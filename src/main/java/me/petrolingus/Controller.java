@@ -9,10 +9,13 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.util.Pair;
+import javafx.util.StringConverter;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -77,24 +80,19 @@ public class Controller {
         switch (hyperlink.getId()) {
             case "hyperlinkPeople":
                 selectedLink = 0;
-                generateTable("select * from person;");
                 break;
             case "hyperlinkPhones":
                 selectedLink = 1;
-                generateTable("select phone_number.id as id, phone, type, name from phone_number join provider on provider.id = provider;");
                 break;
             case "hyperlinkProviders":
                 selectedLink = 2;
-                generateTable("select * from provider;");
                 break;
             case "hyperlinkPhonebook":
                 selectedLink = 3;
-                generateTable("select first_name, middle_name, last_name, phone, type, name from phone_contact \n" +
-                        "\tjoin person on person.id = person_id\n" +
-                        "\tjoin phone_number on phone_number.id = phone_number_id\n" +
-                        "\tjoin provider on provider.id = phone_number.provider;");
                 break;
         }
+
+        updateTable();
 
         searchParametersBox.setDisable(selectedLink != 3);
         toolBox.setDisable(selectedLink == 3);
@@ -153,31 +151,58 @@ public class Controller {
     }
 
     @SuppressWarnings("unchecked")
-    public void onAddButton() throws SQLException, IOException {
+    public void onAddButton() throws IOException {
 
         if (selectedLink == 0) {
-            addEntityToTable("person", node -> {}, node -> ((TextField) node).getText());
+            addEntityToTable("person", node -> {
+            }, node -> ((TextField) node).getText());
         } else if (selectedLink == 1) {
 
-            List<String> providers = List.of("JSHDG", "QWERT", "sjdfhsdl");
 
-            addEntityToTable("phone_number", form -> {
-                form.getChildrenUnmodifiable()
-                        .stream()
-                        .filter(node -> node instanceof VBox)
-                        .map(node -> ((VBox) node).getChildren().get(1))
-                        .filter(node -> node instanceof ChoiceBox)
-                        .findFirst()
-                        .map(node -> (ChoiceBox<String>)node)
-                        .ifPresent(choiceBox -> choiceBox.getItems().addAll(providers));
-            }, node -> {
-                if (node instanceof TextField) {
-                   return ((TextField) node).getText();
+            try (Statement statement = connection.createStatement()) {
+
+                ResultSet resultSet = statement.executeQuery("select id, name from provider;");
+
+                List<Pair<Integer, String>> providerRows = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    providerRows.add(new Pair<>(resultSet.getInt(1), resultSet.getString(2)));
                 }
-                return ((ChoiceBox<String>) node).getSelectionModel().getSelectedItem();
-            });
+
+                addEntityToTable("phone_number", form -> {
+                    form.getChildrenUnmodifiable()
+                            .stream()
+                            .filter(node -> node instanceof VBox)
+                            .map(node -> ((VBox) node).getChildren().get(1))
+                            .filter(node -> node instanceof ChoiceBox)
+                            .findFirst()
+                            .map(node -> (ChoiceBox<Pair<Integer, String>>) node)
+                            .ifPresent(choiceBox -> {
+                                choiceBox.setConverter(new StringConverter<>() {
+                                    @Override
+                                    public String toString(Pair<Integer, String> object) {
+                                        return object != null ? object.getValue() : "";
+                                    }
+
+                                    @Override
+                                    public Pair<Integer, String> fromString(String string) {
+                                        return null;
+                                    }
+                                });
+                                choiceBox.getItems().addAll(providerRows);
+                            });
+                }, node -> {
+                    if (node instanceof TextField) {
+                        return ((TextField) node).getText();
+                    }
+                    return Integer.toString(((ChoiceBox<Pair<Integer, String>>) node).getSelectionModel().getSelectedItem().getKey());
+                });
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         } else if (selectedLink == 2) {
-            addEntityToTable("provider", node -> {}, node -> ((TextField) node).getText());
+            addEntityToTable("provider", node -> {
+            }, node -> ((TextField) node).getText());
         }
 
     }
@@ -216,17 +241,37 @@ public class Controller {
                     .map(field -> "N'" + field + "'")
                     .collect(Collectors.joining(", ", "(", ")"));
 
-            addRowAndShowTable("insert into " + tableName + " values " + values, tableName);
+            addRowAndShowTable("insert into " + tableName + " values " + values);
         });
     }
 
-    private void addRowAndShowTable(String sqlQuery, final String tableName) {
+    private void addRowAndShowTable(String sqlQuery) {
 
         try (Statement statement = connection.createStatement()) {
             statement.execute(sqlQuery);
-            generateTable("select * from " + tableName + ";");
+            updateTable();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateTable() throws SQLException {
+
+        switch (selectedLink) {
+            case 0:
+                generateTable("select * from person;");
+                break;
+            case 1:
+                generateTable("select phone_number.id as id, phone, type, name from phone_number join provider on provider.id = provider;");
+                break;
+            case 2:
+                generateTable("select * from provider;");
+                break;
+            case 3:
+                generateTable("select first_name, middle_name, last_name, phone, type, name from phone_contact \n" +
+                        "\tjoin person on person.id = person_id\n" +
+                        "\tjoin phone_number on phone_number.id = phone_number_id\n" +
+                        "\tjoin provider on provider.id = phone_number.provider;");
         }
     }
 }
